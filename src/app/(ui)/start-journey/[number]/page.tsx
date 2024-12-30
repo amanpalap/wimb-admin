@@ -63,8 +63,18 @@ export default function GetLocation() {
         setTimeout(() => setIsSharingPaused(false), 600000); // Resume sharing after 10 minutes
     };
 
-    const handleReachedDestination = () => {
-        router.push("/start-journey");
+    const handleReachedDestination = async () => {
+        try {
+            const response = await axios.post('/api/location/finish', { busNumber: number })
+            console.log(response)
+            if (response.data.success) {
+                toast.success("Destination reached!");
+                router.push('/start-journey')
+            }
+        } catch (error: unknown) {
+            toast("Failed to end Journey")
+            console.error(error)
+        }
     };
 
     useEffect(() => {
