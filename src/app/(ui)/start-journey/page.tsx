@@ -1,14 +1,15 @@
 "use client";
-
 import axios from "axios";
 import { useState, ChangeEvent, FormEvent } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import MultipleSelect from "@/components/MultipleSelect/MultipleSelect";
 
 interface FormData {
     from: string;
     to: string;
     busNumber: string;
+    via: string[]
     location: {
         lat: number;
         lng: number;
@@ -21,6 +22,7 @@ export default function BusForm() {
         from: "",
         to: "",
         busNumber: "",
+        via: [],
         location: {
             lat: 0,
             lng: 0,
@@ -60,14 +62,17 @@ export default function BusForm() {
 
         const capitalizedData = {
             ...formData,
+            from: formData.from.toUpperCase(),
+            to: formData.to.toUpperCase(),
             busNumber: formData.busNumber.toUpperCase(),
+            via: formData.via.map(station => station.toUpperCase())
         };
 
         try {
             const response = await axios.post("/api/location/update", capitalizedData);
             if (response.status === 201) {
                 toast.success("Data submitted successfully");
-                setFormData({ from: "", to: "", busNumber: "", location: { lat: 0, lng: 0 } });
+                setFormData({ from: "", to: "", busNumber: "", via: [], location: { lat: 0, lng: 0 } });
                 router.push(`/start-journey/${formData.busNumber}`);
             }
         } catch (error: unknown) {
@@ -104,6 +109,8 @@ export default function BusForm() {
                         className="mt-1 block w-full px-3 py-2 bg-gray-700 text-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </label>
+
+                <MultipleSelect formData={formData} setFormData={setFormData} />
 
                 <label className="block mb-4">
                     <span className="text-gray-400">Bus Number</span>

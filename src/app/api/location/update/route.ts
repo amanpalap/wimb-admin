@@ -6,10 +6,10 @@ import { adminDb } from "@/lib/firebaseAdmin";
 export async function POST(request: Request) {
     try {
         // Parse the JSON body from the request
-        const { from, to, busNumber, location } = await request.json();
+        const { from, to, busNumber, via, location } = await request.json();
 
         // Validate required fields
-        if (!from || !to || !busNumber) {
+        if (!from || !to || !via || !busNumber) {
             return NextResponse.json(
                 {
                     error: "All fields are required",
@@ -19,16 +19,12 @@ export async function POST(request: Request) {
             );
         }
 
-        // Normalize field values
-        const normalizedFrom = from.toLowerCase();
-        const normalizedTo = to.toLowerCase();
-        const normalizedBusNumber = busNumber.replace(/[a-z]/g, (char: string) => char.toUpperCase());
-
         // Add the document to the "buses" collection
         const newBus = await adminDb.collection("buses").add({
-            from: normalizedFrom,
-            to: normalizedTo,
-            busNumber: normalizedBusNumber,
+            from,
+            to,
+            busNumber,
+            via,
             location,
             createdAt: new Date().toISOString(),
         });
