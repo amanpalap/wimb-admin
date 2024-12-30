@@ -70,8 +70,9 @@ export default function BusForm() {
                 setFormData({ from: "", to: "", busNumber: "", location: { lat: 0, lng: 0 } });
                 router.push(`/start-journey/${formData.busNumber}`);
             }
-        } catch (error) {
+        } catch (error: unknown) {
             toast.error("Failed to submit data");
+            console.error(error)
         }
     };
 

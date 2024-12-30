@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import { getCurrentLocation, Coordinates } from "@/utils/getCurrentLocations";
@@ -15,7 +15,7 @@ export default function GetLocation() {
     const [timeSinceUpdate, setTimeSinceUpdate] = useState<string>("0 seconds ago");
     const [isSharingPaused, setIsSharingPaused] = useState(false);
 
-    const handleUpdateLocation = async () => {
+    const handleUpdateLocation = useCallback(async () => {
         if (isSharingPaused) return;
 
         try {
@@ -40,19 +40,26 @@ export default function GetLocation() {
                         locationData,
                         number
                     });
-                } catch (error) {
-                    setError("Error Updating location");
+                } catch (error: unknown) {
+                    if (error instanceof Error) {
+                        setError("Error updating location: " + error.message);
+                        console.error(error);
+                    }
                 }
             }, 5000);
-        } catch (err) {
-            setError((err as Error).message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred.");
+            }
             setLocation(null);
         }
-    };
+    }, [isSharingPaused, number]);
 
     const handlePauseSharing = () => {
         setIsSharingPaused(true);
-        toast.success("Stopped sharing for 10 mins")
+        toast.success("Stopped sharing for 10 mins");
         setTimeout(() => setIsSharingPaused(false), 600000); // Resume sharing after 10 minutes
     };
 
@@ -65,7 +72,7 @@ export default function GetLocation() {
         handleUpdateLocation();
 
         return () => clearInterval(interval);
-    }, [number, isSharingPaused]);
+    }, [handleUpdateLocation]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -79,7 +86,7 @@ export default function GetLocation() {
         }, 10000); // Update every 10 seconds for efficiency
 
         return () => clearInterval(timer);
-    }, [lastUpdated]);
+    }, [lastUpdated, isSharingPaused]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
@@ -153,7 +160,7 @@ export default function GetLocation() {
                 {!location && !error && (
                     <div className="bg-gray-700 p-4 rounded-lg mt-4 text-center text-gray-300">
                         <p className="text-lg">No Location Data</p>
-                        <p className="text-sm">Press "Update Location" to share your location.</p>
+                        <p className="text-sm">Press &quotUpdate Location&quot to share your location.</p>
                     </div>
                 )}
             </div>

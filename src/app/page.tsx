@@ -4,18 +4,18 @@ import LoadMegaLoadinging from '../components/loading/MegaLoading';
 import { useRouter } from 'next/navigation';
 
 const Page = () => {
-  const router = useRouter()
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
+      router.push('/start-journey');
     }, 2000);
-    () => clearTimeout(timer);
 
-    router.push('/start-journey')
-    return
-  }, []);
+    // Cleanup function to clear the timer
+    return () => clearTimeout(timer);
+  }, [router]); // Add `router` to the dependency array
 
   return (
     <div>
